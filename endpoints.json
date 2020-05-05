@@ -1,0 +1,20 @@
+{
+  "address": ":8080",
+  "responses": [
+    {
+      "path": "/test",
+      "status": 202,
+      "jsonBody": "endpoints.json"
+    },
+    {
+      "path": "/auth/test",
+      "status": 401,
+      "jsonBody": "endpoints.json"
+    },
+    {
+      "path": "/test2",
+      "status": 201,
+      "jsonBody": "endpoints.json"
+    }
+  ]
+}
