@@ -9,7 +9,7 @@ import (
 )
 
 type ConfigFile struct {
-	Addr      string
+	Addr      string `json:"address"`
 	Responses []Response
 }
 type Response struct {
@@ -23,11 +23,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	configFile := &ConfigFile{}
-	err = json.Unmarshal(file, configFile)
+	configFile := ConfigFile{}
+	err = json.Unmarshal(file, &configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	for _, response := range configFile.Responses {
 		closureResponse := response
 		fmt.Println(closureResponse.Path, "will return status", closureResponse.Status, "with body from file ", closureResponse.JsonBody)
