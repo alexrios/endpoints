@@ -24,9 +24,4 @@ archives:
       - goos: windows
         format: zip
     files:
-      - LICENSE.txt
       - README_{{.Os}}.md
-      - CHANGELOG.md
-      - docs/*
-      - design/*.png
-      - templates/**/*
