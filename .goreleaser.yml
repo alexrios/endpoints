@@ -1,0 +1,33 @@
+archives:
+  -
+    builds:
+      ldflags:
+        - -s -w -X main.build={{.Version}}
+      env:
+        - CGO_ENABLED=0
+      goos:
+        - linux
+        - windows
+        - darwin
+      goarch:
+        - amd64
+      mod_timestamp: '{{ .CommitTimestamp }}'
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    replacements:
+      amd64: 64-bit
+      386: 32-bit
+      darwin: macOS
+      linux: Tux
+      windows: Win
+    wrap_in_directory: true
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE.txt
+      - README_{{.Os}}.md
+      - CHANGELOG.md
+      - docs/*
+      - design/*.png
+      - templates/**/*
