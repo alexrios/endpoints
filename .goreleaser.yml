@@ -1,17 +1,18 @@
+builds:
+    -
+    ldflags:
+      - -s -w
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+    mod_timestamp: '{{ .CommitTimestamp }}'
 archives:
-  -
-    builds:
-        ldflags:
-          - -s -w -X main.build={{.Version}}
-        env:
-          - CGO_ENABLED=0
-        goos:
-          - linux
-          - windows
-          - darwin
-        goarch:
-          - amd64
-        mod_timestamp: '{{ .CommitTimestamp }}'
+    -
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     replacements:
       amd64: 64-bit
