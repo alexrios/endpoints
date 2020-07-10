@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"text/template"
 )
 
 type ConfigFile struct {
@@ -28,11 +30,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	router := mux.NewRouter()
 
 	for _, response := range configFile.Responses {
 		closureResponse := response
 		fmt.Println(closureResponse.Path, "will return status", closureResponse.Status, "with body from file ", closureResponse.JsonBody)
-		http.HandleFunc(closureResponse.Path, func(writer http.ResponseWriter, request *http.Request) {
+		router.HandleFunc(closureResponse.Path, func(writer http.ResponseWriter, request *http.Request) {
+			vars := mux.Vars(request)
 			if 200 != closureResponse.Status {
 				writer.WriteHeader(closureResponse.Status)
 			}
@@ -41,8 +45,11 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			writer.Write(jsonBytes)
+
+			t := template.Must(template.New("letter").Parse(string(jsonBytes)))
+			_ = t.Execute(writer, vars)
 		})
 	}
+	http.Handle("/", router)
 	log.Fatal(http.ListenAndServe(configFile.Addr, nil))
 }
