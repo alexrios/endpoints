@@ -4,7 +4,12 @@
     {
       "path": "/test",
       "status": 202,
-      "jsonBody": "endpoints.json"
+      "jsonBody": "endpoints.json",
+      "callback": {
+        "endpoint" : "localhost:8080/test2",
+        "requestBody": "",
+        "delay": "1s"
+      }
     },
     {
       "path": "/auth/test",
