@@ -2,6 +2,8 @@
 
 The tiniest http endpoints simulator
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/alexrios/endpoints)](https://goreportcard.com/report/github.com/alexrios/endpoints)
+
 ### Usage
 On terminal
 ```shell script
