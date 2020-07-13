@@ -18,6 +18,7 @@ type ConfigFile struct {
 }
 type Response struct {
 	Status   int    `json:"status"`
+	Method   string `json:"method"`
 	Path     string `json:"path"`
 	Latency  string `json:"latency"`
 	JsonBody string `json:"json_body"`
@@ -59,7 +60,11 @@ func main() {
 		if closure.Status == 0 {
 			closure.Status = 200
 		}
-		log.Info(closure.Path, "will return status ", closure.Status, " with body from file ", closure.JsonBody)
+		if closure.Method == "" {
+			closure.Method = "GET"
+		}
+
+		log.Info("[", closure.Method, "] ", closure.Path, " -> ", closure.Status, " with body -> ", closure.JsonBody)
 		router.HandleFunc(closure.Path, func(writer http.ResponseWriter, request *http.Request) {
 			if closure.Status != 200 {
 				writer.WriteHeader(closure.Status)
@@ -84,7 +89,7 @@ func main() {
 			if err != nil {
 				log.Error(err.Error())
 			}
-		})
+		}).Methods(closure.Method)
 	}
 	http.Handle("/", router)
 	if configFile.Addr == "" {
