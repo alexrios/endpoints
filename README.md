@@ -2,9 +2,6 @@
 
 The tiniest http endpoints simulator
 
-## Status
-This project is under development.
-
 ### Usage
 On terminal
 ```shell script
@@ -12,7 +9,7 @@ $ endpoints
 ```
 You should see 
 ```
-INFO[0000] [POST] / -> 200 with body -> customBody.json 
+INFO[0000] [GET] / -> 200 with body -> customBody.json 
 INFO[0000] Listen at :8080                              
 ```
 
@@ -23,7 +20,7 @@ INFO[0000] Listen at :8080
 * status code - 200
 
 #### Configuration file
-####### endpoints.json
+##### endpoints.json
 
 All features example:
 ```json
@@ -42,3 +39,39 @@ All features example:
 ```
 
 note: json_body is the file location of body file.
+
+##### Body interpolation with path variables
+Now you wanna interpolate an identifier on response body. How to do it?
+
+Let's add another response on `responses`.
+```json
+{
+  "address": ":8080",
+  "responses": [
+    {
+      "path": "/",
+      "status": 201,
+      "latency": "400ms",
+      "method": "POST",
+      "json_body": "customBody.json"
+    },
+    {
+      "path": "/{id}/sales",
+      "status": 201,
+      "latency": "400ms",
+      "method": "POST",
+      "json_body": "interpolated.json"
+    }
+  ]
+}
+```
+And now we'll use templating notation to use this reponse body as a template.
+##### interpolated.json
+```
+{
+  "id": {{ .id}}
+}
+```
+
+## Status
+This project is under development.
