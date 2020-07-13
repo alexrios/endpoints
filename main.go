@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"text/template"
 	"time"
 )
@@ -23,10 +24,22 @@ type Response struct {
 }
 
 func main() {
+	if !fileExists("endpoints.json") {
+		err := ioutil.WriteFile("endpoints.json", []byte(DefaultFile), 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = ioutil.WriteFile("customBody.json", []byte(CustomBody), 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	file, err := ioutil.ReadFile("endpoints.json")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
 	configFile := ConfigFile{}
 	err = json.Unmarshal(file, &configFile)
 	if err != nil {
@@ -43,7 +56,10 @@ func main() {
 
 	for _, response := range configFile.Responses {
 		closure := response
-		log.Println(closure.Path, "will return status", closure.Status, "with body from file", closure.JsonBody)
+		if closure.Status == 0 {
+			closure.Status = 200
+		}
+		log.Info(closure.Path, "will return status ", closure.Status, " with body from file ", closure.JsonBody)
 		router.HandleFunc(closure.Path, func(writer http.ResponseWriter, request *http.Request) {
 			if closure.Status != 200 {
 				writer.WriteHeader(closure.Status)
@@ -71,5 +87,17 @@ func main() {
 		})
 	}
 	http.Handle("/", router)
+	if configFile.Addr == "" {
+		configFile.Addr = ":8080"
+	}
+	log.Info("Listen at ", configFile.Addr)
 	log.Fatal(http.ListenAndServe(configFile.Addr, nil))
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
