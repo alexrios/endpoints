@@ -17,7 +17,7 @@ archives:
       amd64: 64-bit
       386: 32-bit
       darwin: macOS
-      linux: Tux
+      linux: linux
       windows: Win
     wrap_in_directory: true
     format: binary
