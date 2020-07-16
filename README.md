@@ -3,7 +3,6 @@
 The tiniest http endpoints simulator
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/alexrios/endpoints)](https://goreportcard.com/report/github.com/alexrios/endpoints)
-
 [![Download shield](https://img.shields.io/github/downloads/alexrios/endpoints/latest/total)](https://img.shields.io/github/downloads/alexrios/endpoints/latest/total)
 
 ### Usage
