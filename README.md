@@ -53,7 +53,7 @@ Let's add another response on `responses`.
   "responses": [
     {
       "path": "/",
-      "status": 201,
+      "status": 200,
       "latency": "400ms",
       "method": "POST",
       "json_body": "customBody.json"
@@ -62,7 +62,7 @@ Let's add another response on `responses`.
       "path": "/{id}/sales",
       "status": 201,
       "latency": "400ms",
-      "method": "POST",
+      "method": "GET",
       "json_body": "interpolated.json"
     }
   ]

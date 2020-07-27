@@ -1,52 +1,48 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
+	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
+	"github.com/spf13/afero"
 	"net/http"
 	"os"
-	"text/template"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
-type ConfigFile struct {
-	Addr      string     `json:"address"`
-	Responses []Response `json:"responses"`
-}
-type Response struct {
-	Status   int    `json:"status"`
-	Method   string `json:"method"`
-	Path     string `json:"path"`
-	Latency  string `json:"latency"`
-	JsonBody string `json:"json_body"`
-}
+const ShutdownTimeout = "30s"
 
 func main() {
-	if !fileExists("endpoints.json") {
-		err := ioutil.WriteFile("endpoints.json", []byte(DefaultFile), 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = ioutil.WriteFile("customBody.json", []byte(CustomBody), 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
+	logger := log.New()
+	var appFs = afero.NewOsFs()
+	if err := run(appFs, logger); err != nil {
+		log.WithField("fn", "main").Error(err)
+		os.Exit(1)
 	}
+}
 
-	file, err := ioutil.ReadFile("endpoints.json")
+func run(fs afero.Fs, log *log.Logger) error {
+	firstRun, err := isFirstRun(fs)
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
+	}
+	if firstRun {
+		err = configureFirstRun(fs)
+		if err != nil {
+			return err
+		}
 	}
 
-	configFile := ConfigFile{}
-	err = json.Unmarshal(file, &configFile)
+	configFile, err := loadConfig(fs)
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 
+	//Config CORS
 	router := mux.NewRouter()
 	cors := handlers.CORS(
 		handlers.AllowedHeaders([]string{"content-type"}),
@@ -54,55 +50,56 @@ func main() {
 		handlers.AllowCredentials(),
 	)
 	router.Use(cors)
-
+	//Set handlers
 	for _, response := range configFile.Responses {
 		closure := response
-		if closure.Status == 0 {
-			closure.Status = 200
-		}
-		if closure.Method == "" {
-			closure.Method = "GET"
-		}
-
 		log.Info("[", closure.Method, "] ", closure.Path, " -> ", closure.Status, " with body -> ", closure.JsonBody)
-		router.HandleFunc(closure.Path, func(writer http.ResponseWriter, request *http.Request) {
-			if closure.Status != 200 {
-				writer.WriteHeader(closure.Status)
-			}
-			writer.Header().Add("Content-Type", "application/json")
-
-			tmpl, err := template.ParseFiles(closure.JsonBody)
-			if err != nil {
-				log.Error(err.Error())
-				writer.WriteHeader(500)
-				return
-			}
-			if closure.Latency != "" {
-				duration, err := time.ParseDuration(closure.Latency)
-				if err != nil {
-					log.Error(err.Error())
-				}
-				time.Sleep(duration)
-			}
-
-			err = tmpl.Execute(writer, mux.Vars(request))
-			if err != nil {
-				log.Error(err.Error())
-			}
-		}).Methods(closure.Method)
+		router.HandleFunc(closure.Path, newHandleFunc(fs, closure)).Methods(closure.Method)
 	}
 	http.Handle("/", router)
-	if configFile.Addr == "" {
-		configFile.Addr = ":8080"
-	}
-	log.Info("Listen at ", configFile.Addr)
-	log.Fatal(http.ListenAndServe(configFile.Addr, nil))
-}
 
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
+	server := http.Server{
+		Addr:    configFile.Addr,
+		Handler: router,
 	}
-	return !info.IsDir()
+
+	// Make a channel to listen for errors coming from the listener. Use a
+	// buffered channel so the goroutine can exit if we don't collect this error.
+	serverErrors := make(chan error, 1)
+
+	go func() {
+		log.Printf("API listening on %s\n", server.Addr)
+		serverErrors <- server.ListenAndServe()
+	}()
+
+	// Make a channel to listen for an interrupt or terminate signal from the OS.
+	// Use a buffered channel because the signal package requires it.
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+
+	// Blocking main and waiting for shutdown.
+	select {
+	case err := <-serverErrors:
+		log.Fatal(err)
+
+	case sig := <-shutdown:
+		log.Printf("main: %v : Start shutdown\n", sig)
+
+		// Give outstanding requests a deadline for completion.
+		duration, err := time.ParseDuration(ShutdownTimeout)
+		if err != nil {
+			log.Fatal(err)
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), duration)
+		defer cancel()
+
+		// Asking listener to shutdown and shed load.
+		if err := server.Shutdown(ctx); err != nil {
+			server.Close()
+			return fmt.Errorf("could not stop server gracefully: %w", err)
+		}
+	}
+
+	log.Fatal(server.ListenAndServe())
+	return nil
 }
