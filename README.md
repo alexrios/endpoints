@@ -7,6 +7,9 @@ The tiniest http endpoints simulator
 # Endpoints
 
 ### Usage
+Download you binary [here](https://github.com/alexrios/endpoints/releases/latest)
+
+
 On terminal
 ```shell script
 $ endpoints 
