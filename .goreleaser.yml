@@ -13,11 +13,6 @@ builds:
     mod_timestamp: '{{ .CommitTimestamp }}'
 archives:
 -   name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    replacements:
-      amd64: 64-bit
-      darwin: macOS
-      linux: linux
-      windows: Win
     wrap_in_directory: true
     format: binary
     format_overrides:
