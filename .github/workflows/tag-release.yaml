@@ -5,9 +5,15 @@ on:
     tags:
       - '*'
 
+env:
+  IMAGE_NAME: endpoints
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
     steps:
       -
         name: Checkout
@@ -19,6 +25,14 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.14
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
