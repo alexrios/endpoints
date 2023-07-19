@@ -23,3 +23,10 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+
+dockers:
+  - image_templates:
+      - "alexriosdev/endpoints:{{ .Tag }}"
+      - "alexriosdev/endpoints:v{{ .Major }}"
+      - "alexriosdev/endpoints:v{{ .Major }}.{{ .Minor }}"
+      - "alexriosdev/endpoints:latest"
