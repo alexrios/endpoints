@@ -82,3 +82,6 @@ And now we'll use templating notation to use this reponse body as a template.
 
 ## Status
 This project is under development.
+
+### Tags
+API, mock, API mock, HTTP mock, server mock, fake server and fake API.
