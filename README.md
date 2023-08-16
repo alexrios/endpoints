@@ -9,11 +9,18 @@ The tiniest HTTP endpoints simulator
 ### Usage
 Download your binary [here](https://github.com/alexrios/endpoints/releases/latest)
 
-
 On terminal
 ```shell script
 $ endpoints 
 ```
+
+Or, if you are into containers
+
+On terminal
+```shell script
+$ docker run ghcr.io/alexrios/endpoints:latest
+```
+
 You should see 
 ```
 INFO[0000] [GET] / -> 200 with body -> customBody.json 
@@ -48,7 +55,7 @@ All features example:
 Note: json_body is the file location of the body file.
 
 ##### Body interpolation with path variables
-Now you wanna interpolate an identifier on the response body. How to do it?
+Now you want to interpolate an identifier on the response body. How to do it?
 
 Let's add another response on `responses`.
 ```json
