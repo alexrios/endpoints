@@ -1,4 +1,4 @@
-The tiniest http endpoints simulator
+The tiniest HTTP endpoints simulator
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/alexrios/endpoints)](https://goreportcard.com/report/github.com/alexrios/endpoints)
 [![Download shield](https://img.shields.io/github/downloads/alexrios/endpoints/total)](https://img.shields.io/github/downloads/alexrios/endpoints/total)
@@ -7,7 +7,7 @@ The tiniest http endpoints simulator
 # Endpoints
 
 ### Usage
-Download you binary [here](https://github.com/alexrios/endpoints/releases/latest)
+Download your binary [here](https://github.com/alexrios/endpoints/releases/latest)
 
 
 On terminal
@@ -45,10 +45,10 @@ All features example:
 }
 ```
 
-note: json_body is the file location of body file.
+Note: json_body is the file location of the body file.
 
 ##### Body interpolation with path variables
-Now you wanna interpolate an identifier on response body. How to do it?
+Now you wanna interpolate an identifier on the response body. How to do it?
 
 Let's add another response on `responses`.
 ```json
@@ -72,7 +72,7 @@ Let's add another response on `responses`.
   ]
 }
 ```
-And now we'll use templating notation to use this reponse body as a template.
+And now, we'll use templating notation to use this response body as a template.
 ##### interpolated.json
 ```
 {
