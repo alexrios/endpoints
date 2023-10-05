@@ -2,42 +2,54 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"syscall"
+	"time"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 const ShutdownTimeout = "30s"
 
 func main() {
+	var cfgPath string
+	flag.StringVar(&cfgPath, "config", "", "location of config file (default: .)")
+	flag.Parse()
+
 	logger := log.New()
 	var appFs = afero.NewOsFs()
-	if err := run(appFs, logger); err != nil {
+	if cfgPath == "" {
+		cfgPath = DefaultConfigurationFileName
+	} else {
+		cfgPath = filepath.Join(cfgPath, DefaultConfigurationFileName)
+	}
+	if err := run(appFs, cfgPath, logger); err != nil {
 		log.WithField("fn", "main").Error(err)
 		os.Exit(1)
 	}
 }
 
-func run(fs afero.Fs, log *log.Logger) error {
-	firstRun, err := isFirstRun(fs)
+func run(fs afero.Fs, path string, log *log.Logger) error {
+	firstRun, err := isFirstRun(fs, path)
 	if err != nil {
 		return err
 	}
 	if firstRun {
-		err = configureFirstRun(fs)
+		err = configureFirstRun(fs, path)
 		if err != nil {
 			return err
 		}
 	}
 
-	configFile, err := loadConfig(fs)
+	configFile, err := loadConfig(fs, path)
 	if err != nil {
 		return err
 	}

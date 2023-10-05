@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+
 	"github.com/spf13/afero"
 )
 
@@ -42,8 +43,8 @@ func (c *ConfigFile) enforceDefaults() {
 	}
 }
 
-func loadConfig(fs afero.Fs) (ConfigFile, error) {
-	file, err := afero.ReadFile(fs, DefaultConfigurationFileName)
+func loadConfig(fs afero.Fs, path string) (ConfigFile, error) {
+	file, err := afero.ReadFile(fs, path)
 	if err != nil {
 		return ConfigFile{}, err
 	}
@@ -57,16 +58,16 @@ func loadConfig(fs afero.Fs) (ConfigFile, error) {
 	return configFile, nil
 }
 
-func isFirstRun(fs afero.Fs) (bool, error) {
-	exists, err := afero.Exists(fs, DefaultConfigurationFileName)
+func isFirstRun(fs afero.Fs, path string) (bool, error) {
+	exists, err := afero.Exists(fs, path)
 	if err != nil {
 		return false, err
 	}
 	return !exists, nil
 }
 
-func configureFirstRun(fs afero.Fs) error {
-	err := afero.WriteFile(fs, DefaultConfigurationFileName, []byte(DefaultConfigurationFileContent), 0644)
+func configureFirstRun(fs afero.Fs, path string) error {
+	err := afero.WriteFile(fs, path, []byte(DefaultConfigurationFileContent), 0644)
 	if err != nil {
 		return err
 	}
