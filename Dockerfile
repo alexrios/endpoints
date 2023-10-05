@@ -1,3 +1,4 @@
 FROM scratch
-ENTRYPOINT ["/endpoints"]
 COPY endpoints /
+ENTRYPOINT ["/endpoints"]
+CMD ["--config=."]
