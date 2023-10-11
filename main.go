@@ -26,30 +26,31 @@ func main() {
 
 	logger := log.New()
 	var appFs = afero.NewOsFs()
+	var cfgFile string
 	if cfgPath == "" {
-		cfgPath = DefaultConfigurationFileName
+		cfgFile = DefaultConfigurationFileName
 	} else {
-		cfgPath = filepath.Join(cfgPath, DefaultConfigurationFileName)
+		cfgFile = filepath.Join(cfgPath, DefaultConfigurationFileName)
 	}
-	if err := run(appFs, cfgPath, logger); err != nil {
+	if err := run(appFs, cfgPath, cfgFile, logger); err != nil {
 		log.WithField("fn", "main").Error(err)
 		os.Exit(1)
 	}
 }
 
-func run(fs afero.Fs, path string, log *log.Logger) error {
-	firstRun, err := isFirstRun(fs, path)
+func run(fs afero.Fs, path string, cfgFile string, log *log.Logger) error {
+	firstRun, err := isFirstRun(fs, cfgFile)
 	if err != nil {
 		return err
 	}
 	if firstRun {
-		err = configureFirstRun(fs, path)
+		err = configureFirstRun(fs, cfgFile)
 		if err != nil {
 			return err
 		}
 	}
 
-	configFile, err := loadConfig(fs, path)
+	configFile, err := loadConfig(fs, cfgFile)
 	if err != nil {
 		return err
 	}
@@ -66,7 +67,7 @@ func run(fs afero.Fs, path string, log *log.Logger) error {
 	for _, response := range configFile.Responses {
 		closure := response
 		log.Info("[", closure.Method, "] ", closure.Path, " -> ", closure.Status, " with body -> ", closure.JsonBody)
-		router.HandleFunc(closure.Path, newHandleFunc(fs, closure)).Methods(closure.Method)
+		router.HandleFunc(closure.Path, newHandleFunc(fs, path, closure)).Methods(closure.Method)
 	}
 	http.Handle("/", router)
 
