@@ -17,13 +17,6 @@ func newHandleFunc(fs afero.Fs, path string, r Response) func(writer http.Respon
 			writer.WriteHeader(r.Status)
 		}
 
-		tmpl, err := parseFile(fs, path, r.JsonBody)
-		if err != nil {
-			log.Error(err)
-			writer.WriteHeader(500)
-			_, _ = writer.Write([]byte(err.Error()))
-			return
-		}
 		if r.Latency != "" {
 			duration, err := time.ParseDuration(r.Latency)
 			if err != nil {
@@ -32,11 +25,22 @@ func newHandleFunc(fs afero.Fs, path string, r Response) func(writer http.Respon
 			time.Sleep(duration)
 		}
 
-		writer.Header().Add("Content-Type", "application/json")
-		err = tmpl.Execute(writer, mux.Vars(request))
-		if err != nil {
-			log.Error(err)
+		if r.JsonBody != "" {
+			tmpl, err := parseFile(fs, path, r.JsonBody)
+			if err != nil {
+				log.Error(err)
+				writer.WriteHeader(500)
+				_, _ = writer.Write([]byte(err.Error()))
+				return
+			}
+
+			writer.Header().Add("Content-Type", "application/json")
+			err = tmpl.Execute(writer, mux.Vars(request))
+			if err != nil {
+				log.Error(err)
+			}
 		}
+
 	}
 }
 
