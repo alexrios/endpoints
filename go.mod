@@ -1,4 +1,4 @@
-module endpoints
+module github.com/alexrios/endpoints
 
 go 1.14
 
