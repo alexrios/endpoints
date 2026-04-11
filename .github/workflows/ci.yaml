@@ -36,4 +36,4 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
-          args: check
+          args: check --deprecated
