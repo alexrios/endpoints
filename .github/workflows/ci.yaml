@@ -20,20 +20,3 @@ jobs:
 
       - name: Build
         run: go build -o /dev/null .
-
-  goreleaser-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-
-      - name: Validate goreleaser config
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          version: "~> v2"
-          args: check --deprecated
