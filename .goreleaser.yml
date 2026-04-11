@@ -18,45 +18,20 @@ builds:
 archives:
   - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     wrap_in_directory: true
-    format: binary
-    format_overrides:
+    formats:
+      - binary
+    overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
 
-dockers:
+dockers_v2:
   - image_templates:
-      - "ghcr.io/alexrios/endpoints:{{ .Tag }}-amd64"
-    use: buildx
-    goarch: amd64
-    build_flag_templates:
-      - "--platform=linux/amd64"
+      - "ghcr.io/alexrios/endpoints:{{ .Tag }}"
+      - "ghcr.io/alexrios/endpoints:v{{ .Major }}"
+      - "ghcr.io/alexrios/endpoints:v{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/alexrios/endpoints:latest"
+    platforms:
+      - linux/amd64
+      - linux/arm64
     dockerfile: Dockerfile
-
-  - image_templates:
-      - "ghcr.io/alexrios/endpoints:{{ .Tag }}-arm64"
-    use: buildx
-    goarch: arm64
-    build_flag_templates:
-      - "--platform=linux/arm64"
-    dockerfile: Dockerfile
-
-docker_manifests:
-  - name_template: "ghcr.io/alexrios/endpoints:{{ .Tag }}"
-    image_templates:
-      - "ghcr.io/alexrios/endpoints:{{ .Tag }}-amd64"
-      - "ghcr.io/alexrios/endpoints:{{ .Tag }}-arm64"
-
-  - name_template: "ghcr.io/alexrios/endpoints:v{{ .Major }}"
-    image_templates:
-      - "ghcr.io/alexrios/endpoints:{{ .Tag }}-amd64"
-      - "ghcr.io/alexrios/endpoints:{{ .Tag }}-arm64"
-
-  - name_template: "ghcr.io/alexrios/endpoints:v{{ .Major }}.{{ .Minor }}"
-    image_templates:
-      - "ghcr.io/alexrios/endpoints:{{ .Tag }}-amd64"
-      - "ghcr.io/alexrios/endpoints:{{ .Tag }}-arm64"
-
-  - name_template: "ghcr.io/alexrios/endpoints:latest"
-    image_templates:
-      - "ghcr.io/alexrios/endpoints:{{ .Tag }}-amd64"
-      - "ghcr.io/alexrios/endpoints:{{ .Tag }}-arm64"
